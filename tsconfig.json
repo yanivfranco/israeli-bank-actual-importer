@@ -1,0 +1,18 @@
+{
+  "ts-node": {
+    "files": true
+  },
+  "files": ["src/types/actual-app.d.ts"],
+  "compilerOptions": {
+    "module": "CommonJS",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "skipLibCheck": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "declaration": true,
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*", "lib/**/*"],
+  "exclude": ["node_modules/**/*", "dist/**/*", "lib/**/*", "node_modules"]
+}

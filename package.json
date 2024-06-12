@@ -1,6 +1,6 @@
 {
   "name": "israeli-bank-actual-importer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "yanivfranco@gmail.com",
   "license": "MIT",
   "main": "dist/index.js",
@@ -11,8 +11,7 @@
   "dependencies": {
     "@actual-app/api": "^6.7.1",
     "download-chromium": "^3.0.0",
-    "israeli-bank-scrapers": "file:../israeli-bank-scrapers-fork",
-    "israeli-bank-scrapers-core": "^4.5.0",
+    "israeli-bank-scrapers-forked": "^1.0.0",
     "node-cron": "^3.0.3",
     "pino": "^9.1.0",
     "pino-pretty": "^11.0.0"
@@ -23,5 +22,8 @@
     "typescript": "^5.4.5",
     "ts-pattern": "^5.1.2",
     "ts-node": "^10.9.2"
+  },
+  "peerDependencies": {
+    "israeli-bank-scrapers-forked": "^1.0.0"
   }
 }

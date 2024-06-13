@@ -1,6 +1,6 @@
 {
   "name": "israeli-bank-actual-importer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "yanivfranco@gmail.com",
   "license": "MIT",
   "main": "dist/index.js",
@@ -14,16 +14,18 @@
     "israeli-bank-scrapers-forked": "^1.0.0",
     "node-cron": "^3.0.3",
     "pino": "^9.1.0",
-    "pino-pretty": "^11.0.0"
+    "pino-pretty": "^11.0.0",
+    "ts-pattern": "^5.1.2"
   },
   "devDependencies": {
     "@types/node-cron": "^3.0.11",
     "eslint": "^9.3.0",
-    "typescript": "^5.4.5",
-    "ts-pattern": "^5.1.2",
-    "ts-node": "^10.9.2"
+    "typescript": "^5.4.5"
   },
   "peerDependencies": {
     "israeli-bank-scrapers-forked": "^1.0.0"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

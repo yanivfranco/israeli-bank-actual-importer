@@ -1,7 +1,4 @@
 {
-  "ts-node": {
-    "files": true
-  },
   "files": ["src/types/actual-app.d.ts"],
   "compilerOptions": {
     "module": "CommonJS",

@@ -309,12 +309,12 @@ export class ActualImporter {
     if (this.config.shouldDownloadChromium) {
       const puppeteerConfig = getPuppeteerConfig();
       logger.info(
-        { revision: puppeteerConfig.revision, installPath: this.config.chromiumInstallPath },
+        { revision: puppeteerConfig.chromiumRevision, installPath: this.config.chromiumInstallPath },
         `Downloading chromium`
       );
 
       this.chromiumPath = await download({
-        revision: puppeteerConfig.revision,
+        revision: puppeteerConfig.chromiumRevision,
         log: true,
         installPath: this.config.chromiumInstallPath,
       });

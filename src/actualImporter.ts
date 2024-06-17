@@ -14,6 +14,21 @@ import { logger } from "./logger";
 import { Scraper, ScraperConfig } from "./scraper";
 const download = require("download-chromium");
 
+export type OnImportSuccessArgs = {
+  actualAccountId: string;
+  accountName: string;
+  updated: string[];
+  added: string[];
+  errors: string[];
+  startDate: Date;
+};
+
+export type OnImportErrorArgs = {
+  companyId: string;
+  startDate: Date;
+  error: Error;
+};
+
 export type ActualImporterConfig = {
   actualSyncId: string;
   actualUrl: string;
@@ -24,11 +39,15 @@ export type ActualImporterConfig = {
   shouldDownloadChromium?: boolean;
   chromiumInstallPath?: string;
   showLogs?: boolean;
+  onImportError?: (result: OnImportErrorArgs) => void;
+  onImportSuccess?: (result: OnImportSuccessArgs) => void;
+  onImportFinish?: () => void;
 };
 
 export type CronConfig = {
   cronTime: "test" | "daily" | "weekly" | "monthly" | "biweekly";
   runOnStart?: boolean;
+  timezone?: string;
 };
 
 export class ActualImporter {
@@ -169,13 +188,35 @@ export class ActualImporter {
             { accountName, actualAccountId, updated: addTxnResult.updated.length, added: addTxnResult.added.length },
             `Transactions imported to Actual`
           );
+
+          if (this.config.onImportSuccess) {
+            this.config.onImportSuccess({
+              actualAccountId,
+              accountName,
+              updated: addTxnResult.updated,
+              added: addTxnResult.added,
+              errors: addTxnResult.errors,
+              startDate: scraperConfig.options.startDate,
+            });
+          }
         }
       } catch (err) {
+        if (this.config.onImportError) {
+          this.config.onImportError({
+            companyId: scraperConfig.options.companyId,
+            startDate: scraperConfig.options.startDate,
+            error: err,
+          });
+        }
         logger.error(err);
       }
     }
 
     logger.info(`Finished importing transactions`);
+
+    if (this.config.onImportFinish) {
+      this.config.onImportFinish();
+    }
 
     if (shouldShutdown) {
       logger.info(`Shutting down Actual API`);

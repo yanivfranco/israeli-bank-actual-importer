@@ -1,6 +1,6 @@
 {
   "name": "israeli-bank-actual-importer",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "author": "yanivfranco@gmail.com",
   "license": "MIT",
   "main": "dist/index.js",

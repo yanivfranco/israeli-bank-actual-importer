@@ -107,7 +107,7 @@ export class ActualImporter {
     return new Date(new Date(fs.readFileSync(this.lastCronRunTimeFilePath, "utf8")).getTime() - 1000 * 60 * 60 * 24);
   }
 
-  private createImportConfigForCron(cronConfig: CronConfig) {
+  private createImportConfigForCron(cronConfig: CronConfig): ActualImporterConfig {
     // Get last cron run time from file or set it based on cron config
     const lastCronRunTime = this.getLastCronRunTime();
     const timeBefore = match(cronConfig.cronTime)
@@ -123,8 +123,8 @@ export class ActualImporter {
       ...this.config,
       scrappers: this.config.scrappers.map((s) => ({
         ...s,
-        scraper: {
-          options: { ...s.scraperConfig.options, startDate },
+        scraperConfig: {
+          options: { startDate, ...s.scraperConfig.options },
           credentials: s.scraperConfig.credentials,
         },
       })),

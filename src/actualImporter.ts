@@ -34,7 +34,7 @@ export type ActualImporterConfig = {
   actualUrl: string;
   actualPassword: string;
   actualDataDir: string;
-  scrappers: { scraperConfig: ScraperConfig; actualAccountType: Account["type"] }[];
+  scrappers: ScraperConfig[];
   cleanup?: boolean;
   shouldDownloadChromium?: boolean;
   chromiumInstallPath?: string;
@@ -98,7 +98,7 @@ export class ActualImporter {
     fs.writeFileSync(this.lastCronRunTimeFilePath, new Date().toISOString(), { flag: "w" });
   }
 
-  private getLastCronRunTime() {
+  getLastCronRunTime() {
     if (!fs.existsSync(this.lastCronRunTimeFilePath)) {
       return null;
     }
@@ -107,7 +107,7 @@ export class ActualImporter {
     return new Date(new Date(fs.readFileSync(this.lastCronRunTimeFilePath, "utf8")).getTime() - 1000 * 60 * 60 * 24);
   }
 
-  private createImportConfigForCron(cronConfig: CronConfig): ActualImporterConfig {
+  createImportConfigForCron(cronConfig: CronConfig): ActualImporterConfig {
     // Get last cron run time from file or set it based on cron config
     const lastCronRunTime = this.getLastCronRunTime();
     const timeBefore = match(cronConfig.cronTime)
@@ -121,12 +121,9 @@ export class ActualImporter {
 
     return {
       ...this.config,
-      scrappers: this.config.scrappers.map((s) => ({
+      scrappers: this.config.scrappers.map<ScraperConfig>((s) => ({
         ...s,
-        scraperConfig: {
-          options: { startDate, ...s.scraperConfig.options },
-          credentials: s.scraperConfig.credentials,
-        },
+        options: { ...s.options, startDate },
       })),
     };
   }
@@ -146,7 +143,7 @@ export class ActualImporter {
       await this.cleanup();
     }
 
-    for (const { scraperConfig, actualAccountType: accountType } of this.config.scrappers) {
+    for (const scraperConfig of this.config.scrappers) {
       try {
         const scraper = new Scraper(scraperConfig, this.chromiumPath);
         const scrapeResult = await scraper.scrape();
@@ -163,7 +160,7 @@ export class ActualImporter {
           // If account not found in Actual, create it
           if (!actualAccountId) {
             logger.warn({ accountName }, `Couldn't find account in Actual, creating a new one`);
-            actualAccountId = await this.createAccount(accountName, accountType, scraperAccount);
+            actualAccountId = await this.createAccount(accountName, scraperConfig.actualAccountType, scraperAccount);
           }
 
           // Add transactions to Actual

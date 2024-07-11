@@ -10,6 +10,6 @@
     "declaration": true,
     "outDir": "./dist"
   },
-  "include": ["src/**/*", "lib/**/*"],
+  "include": ["src/**/*", "lib/**/*", "tests/**/*"],
   "exclude": ["node_modules/**/*", "dist/**/*", "lib/**/*", "node_modules"]
 }

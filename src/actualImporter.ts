@@ -103,8 +103,10 @@ export class ActualImporter {
       return null;
     }
 
-    // 1 day before to make sure we don't miss any transactions
-    return new Date(new Date(fs.readFileSync(this.lastCronRunTimeFilePath, "utf8")).getTime() - 1000 * 60 * 60 * 24);
+    // 3 day before to make sure we don't miss any transactions
+    return new Date(
+      new Date(fs.readFileSync(this.lastCronRunTimeFilePath, "utf8")).getTime() - 1000 * 60 * 60 * 24 * 3
+    );
   }
 
   createImportConfigForCron(cronConfig: CronConfig): ActualImporterConfig {

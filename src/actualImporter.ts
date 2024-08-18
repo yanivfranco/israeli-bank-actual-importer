@@ -345,7 +345,7 @@ export class ActualImporter {
       .filter(Boolean) as ActualTransaction[];
   }
 
-  private async init() {
+  public async init() {
     this.api = await actualApi(this.config);
     await this.api.downloadBudget(this.config.actualSyncId);
 
@@ -366,7 +366,7 @@ export class ActualImporter {
     this.isInitialized = true;
   }
 
-  private async shutdown() {
+  public async shutdown() {
     if (this.isInitialized) {
       await this.api.shutdown();
     }

@@ -333,7 +333,6 @@ export class ActualImporter {
           account: accountId,
           date: new Date(t.date),
           amount: actualApi.utils.amountToInteger(t.chargedAmount),
-          category: t.category,
           notes: t.memo,
           imported_payee: t.description,
           cleared: t.status === "completed",

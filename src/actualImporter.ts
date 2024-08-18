@@ -130,6 +130,10 @@ export class ActualImporter {
     };
   }
 
+  public getApi() {
+    return this.api;
+  }
+
   public async import(
     { shouldShutdown }: { shouldShutdown?: boolean; config?: ActualImporterConfig } = {
       shouldShutdown: true,

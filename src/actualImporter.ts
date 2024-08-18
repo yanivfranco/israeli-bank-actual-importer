@@ -4,8 +4,8 @@ import { Transaction as ActualTransaction } from "@actual-app/api";
 // @ts-ignore
 import * as actualInjected from "@actual-app/api/dist/injected";
 import * as fs from "fs";
-import { getPuppeteerConfig } from "israeli-bank-scrapers-forked";
-import { Transaction as ScraperTransaction, TransactionsAccount } from "israeli-bank-scrapers-forked/lib/transactions";
+import { getPuppeteerConfig } from "israeli-bank-scrapers";
+import { Transaction as ScraperTransaction, TransactionsAccount } from "israeli-bank-scrapers/lib/transactions";
 import * as nodeCron from "node-cron";
 import * as readline from "readline";
 import { match } from "ts-pattern";

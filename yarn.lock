@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@actual-app/api@^6.9.0":
-  version "6.9.0"
-  resolved "https://registry.yarnpkg.com/@actual-app/api/-/api-6.9.0.tgz#db0d13ec94dbc84b4d6fdcf2b67aa53f304f31cd"
-  integrity sha512-/2uwe3c+gvLDpn59io+dKLC9dDvrZyT36DEWRGxe5BR7zvgm2rFbyhxyud+q4S9OODs8W7Oc5DVaoLYWilZBJA==
+"@actual-app/api@^6.10.0":
+  version "6.10.0"
+  resolved "https://registry.yarnpkg.com/@actual-app/api/-/api-6.10.0.tgz#d823b2e7cc85b07202381c504f060bc2d5504e95"
+  integrity sha512-Ai86X8iWompivfhSsgyLnnSAN+SIfVQzMHSlaFR3we9QzFGUMRsg++kQgjiE16WUc0hF969SyFtKjcuRLbIvPQ==
   dependencies:
     "@actual-app/crdt" "^2.1.0"
     better-sqlite3 "^9.6.0"
@@ -638,20 +638,6 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@puppeteer/browsers@2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@puppeteer/browsers/-/browsers-2.2.0.tgz#25b5c6d1c93eb91e7086ebc95b767fe7b3ee5ec4"
-  integrity sha512-MC7LxpcBtdfTbzwARXIkqGZ1Osn3nnZJlm+i0+VqHl72t//Xwl9wICrXT8BwtgC6s1xJNHsxOpvzISUqe92+sw==
-  dependencies:
-    debug "4.3.4"
-    extract-zip "2.0.1"
-    progress "2.0.3"
-    proxy-agent "6.4.0"
-    semver "7.6.0"
-    tar-fs "3.0.5"
-    unbzip2-stream "1.4.3"
-    yargs "17.7.2"
-
 "@puppeteer/browsers@2.2.3":
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/@puppeteer/browsers/-/browsers-2.2.3.tgz#ad6b79129c50825e77ddaba082680f4dad0b674e"
@@ -1203,15 +1189,6 @@ chownr@^1.1.1:
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.1.4.tgz#6fc9d7b42d32a583596337666e7d08084da2cc6b"
   integrity sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==
 
-chromium-bidi@0.5.13:
-  version "0.5.13"
-  resolved "https://registry.yarnpkg.com/chromium-bidi/-/chromium-bidi-0.5.13.tgz#e16512d77b161f2f92da91a48ea2ec4185668549"
-  integrity sha512-OHbYCetDxdW/xmlrafgOiLsIrw4Sp1BEeolbZ1UGJO5v/nekQOJBj/Kzyw6sqKcAVabUTo0GS3cTYgr6zIf00g==
-  dependencies:
-    mitt "3.0.1"
-    urlpattern-polyfill "10.0.0"
-    zod "3.22.4"
-
 chromium-bidi@0.5.24:
   version "0.5.24"
   resolved "https://registry.yarnpkg.com/chromium-bidi/-/chromium-bidi-0.5.24.tgz#0fe672fa30b1e6bcc63ae818442b21c41849c435"
@@ -1326,7 +1303,7 @@ core-util-is@~1.0.0:
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.3.tgz#a6042d3634c2b27e9328f837b965fac83808db85"
   integrity sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==
 
-cosmiconfig@9.0.0, cosmiconfig@^9.0.0:
+cosmiconfig@^9.0.0:
   version "9.0.0"
   resolved "https://registry.yarnpkg.com/cosmiconfig/-/cosmiconfig-9.0.0.tgz#34c3fc58287b915f3ae905ab6dc3de258b55ad9d"
   integrity sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==
@@ -1488,11 +1465,6 @@ detect-newline@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/detect-newline/-/detect-newline-3.1.0.tgz#576f5dfc63ae1a192ff192d8ad3af6308991b651"
   integrity sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA==
-
-devtools-protocol@0.0.1249869:
-  version "0.0.1249869"
-  resolved "https://registry.yarnpkg.com/devtools-protocol/-/devtools-protocol-0.0.1249869.tgz#000c3cf1afc189a18db98135a50d4a8f95a47d29"
-  integrity sha512-Ctp4hInA0BEavlUoRy9mhGq0i+JSo/AwVyX2EFgZmV1kYB+Zq+EMBAn52QWu6FbRr10hRb6pBl420upbp4++vg==
 
 devtools-protocol@0.0.1299070:
   version "0.0.1299070"
@@ -2282,22 +2254,6 @@ isexe@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
-
-israeli-bank-scrapers-forked@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/israeli-bank-scrapers-forked/-/israeli-bank-scrapers-forked-1.0.1.tgz#4ebaf0b2b292a807b955b29fd567c44224158e80"
-  integrity sha512-qEEl5sgpgu+xUm90/GMewIaBKTce5TqpbpSNbT10VFUUcbDdI3r7FVeIDeavDBl2P1CbbJC3dJ69yZJaubQHZQ==
-  dependencies:
-    build-url "^2.0.0"
-    core-js "^3.1.4"
-    debug "^4.3.2"
-    json2csv "^4.5.4"
-    lodash "^4.17.10"
-    moment "^2.22.2"
-    moment-timezone "^0.5.37"
-    node-fetch "^2.2.0"
-    puppeteer "22.5.0"
-    uuid "^9.0.1"
 
 israeli-bank-scrapers@^5.1.1:
   version "5.1.1"
@@ -3499,17 +3455,6 @@ puppeteer-core@22.12.1:
     devtools-protocol "0.0.1299070"
     ws "^8.17.1"
 
-puppeteer-core@22.5.0:
-  version "22.5.0"
-  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-22.5.0.tgz#9d7767aaa5961f0e7fa0127ea38e1541e7f8c685"
-  integrity sha512-bcfmM1nNSysjnES/ZZ1KdwFAFFGL3N76qRpisBb4WL7f4UAD4vPDxlhKZ1HJCDgMSWeYmeder4kftyp6lKqMYg==
-  dependencies:
-    "@puppeteer/browsers" "2.2.0"
-    chromium-bidi "0.5.13"
-    debug "4.3.4"
-    devtools-protocol "0.0.1249869"
-    ws "8.16.0"
-
 puppeteer@22.12.1:
   version "22.12.1"
   resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-22.12.1.tgz#a648715c24e65a9b0cee515687d8923bfa639a67"
@@ -3519,15 +3464,6 @@ puppeteer@22.12.1:
     cosmiconfig "^9.0.0"
     devtools-protocol "0.0.1299070"
     puppeteer-core "22.12.1"
-
-puppeteer@22.5.0:
-  version "22.5.0"
-  resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-22.5.0.tgz#b20ac97aebf604f0e15068cfc9f18eeedfadf3cb"
-  integrity sha512-PNVflixb6w3FMhehYhLcaQHTCcNKVkjxekzyvWr0n0yBnhUYF0ZhiG4J1I14Mzui2oW8dGvUD8kbXj0GiN1pFg==
-  dependencies:
-    "@puppeteer/browsers" "2.2.0"
-    cosmiconfig "9.0.0"
-    puppeteer-core "22.5.0"
 
 pure-rand@^6.0.0:
   version "6.1.0"
@@ -4268,11 +4204,6 @@ write-file-atomic@^4.0.2:
     imurmurhash "^0.1.4"
     signal-exit "^3.0.7"
 
-ws@8.16.0:
-  version "8.16.0"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.16.0.tgz#d1cd774f36fbc07165066a60e40323eab6446fd4"
-  integrity sha512-HS0c//TP7Ina87TfiPUz1rQzMhHrl/SG2guqRcTOIUYD2q8uhUdNHZYJUaQ8aTGPzCh+c6oawMKW35nFl1dxyQ==
-
 ws@^8.17.1:
   version "8.18.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.0.tgz#0d7505a6eafe2b0e712d232b42279f53bc289bbc"
@@ -4328,11 +4259,6 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
-
-zod@3.22.4:
-  version "3.22.4"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.22.4.tgz#f31c3a9386f61b1f228af56faa9255e845cf3fff"
-  integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==
 
 zod@3.23.8:
   version "3.23.8"

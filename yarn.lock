@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@actual-app/api@^6.10.0":
-  version "6.10.0"
-  resolved "https://registry.yarnpkg.com/@actual-app/api/-/api-6.10.0.tgz#d823b2e7cc85b07202381c504f060bc2d5504e95"
-  integrity sha512-Ai86X8iWompivfhSsgyLnnSAN+SIfVQzMHSlaFR3we9QzFGUMRsg++kQgjiE16WUc0hF969SyFtKjcuRLbIvPQ==
+"@actual-app/api@^24.10.1":
+  version "24.10.1"
+  resolved "https://registry.yarnpkg.com/@actual-app/api/-/api-24.10.1.tgz#ed881dfb6b58f9a4a93ed95e3432e302f94a7eea"
+  integrity sha512-lY9shDWq+Vy3YfC9P/31BqPklRc+R3ONAn27wr1JUcddObkIH0MtkFC77DXvoVeu/zDP6acNj/YUwVEhH0ZZww==
   dependencies:
     "@actual-app/crdt" "^2.1.0"
     better-sqlite3 "^9.6.0"

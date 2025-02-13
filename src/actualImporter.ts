@@ -89,8 +89,14 @@ export class ActualImporter {
 
     nodeCron.schedule(cronTime, async () => {
       this.config = this.createImportConfigForCron(cornConfig);
-      await this.import({ shouldShutdown: false });
-      this.updateLastCronRunTime();
+
+      logger.info(`Starting import with config: ${JSON.stringify(this.config)}`);
+
+      const isSuccessful = await this.import({ shouldShutdown: false });
+      if (isSuccessful) {
+        logger.info(`Finished cron job successfully`);
+        this.updateLastCronRunTime();
+      }
     });
   }
 
@@ -100,6 +106,7 @@ export class ActualImporter {
 
   getLastCronRunTime() {
     if (!fs.existsSync(this.lastCronRunTimeFilePath)) {
+      logger.info(`Couldn't find last cron run time file`);
       return null;
     }
 
@@ -139,7 +146,8 @@ export class ActualImporter {
       shouldShutdown: true,
       config: this.config,
     }
-  ) {
+  ): Promise<boolean> {
+    let isSuccessful = true;
     if (!this.isInitialized) {
       logger.info("Initializing Actual API");
       await this.init();
@@ -212,6 +220,7 @@ export class ActualImporter {
           });
         }
         logger.error(err);
+        isSuccessful = false;
       }
     }
 
@@ -225,6 +234,8 @@ export class ActualImporter {
       logger.info(`Shutting down Actual API`);
       await this.shutdown();
     }
+
+    return isSuccessful;
   }
 
   private async createAccount(accountName: string, accountType: Account["type"], scraperAccount: TransactionsAccount) {

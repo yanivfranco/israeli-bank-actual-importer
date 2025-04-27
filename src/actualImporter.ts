@@ -29,6 +29,12 @@ export type OnImportErrorArgs = {
   error: Error;
 };
 
+export type RetryConfig = {
+  maxRetries: number;
+  initialDelay: number;
+  maxDelay: number;
+};
+
 export type ActualImporterConfig = {
   actualSyncId: string;
   actualUrl: string;
@@ -39,6 +45,7 @@ export type ActualImporterConfig = {
   shouldDownloadChromium?: boolean;
   chromiumInstallPath?: string;
   showLogs?: boolean;
+  retry?: RetryConfig;
   onImportError?: (result: OnImportErrorArgs) => void;
   onImportSuccess?: (result: OnImportSuccessArgs) => void;
   onImportFinish?: () => void;
@@ -118,7 +125,7 @@ export class ActualImporter {
     );
   }
 
-  private createImportConfigForCron(): ActualImporterConfig {
+  public createImportConfigForCron(): ActualImporterConfig {
     // Get last cron run time from file or set it based on cron config
     const lastCronRunTime = this.getLastCronRunTime()
     
@@ -134,6 +141,125 @@ export class ActualImporter {
 
   public getApi() {
     return this.api;
+  }
+
+  private async delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private getRetryDelay(attempt: number): number {
+    const retryConfig = this.config.retry ?? { maxRetries: 3, initialDelay: 1000, maxDelay: 10000 };
+    const delay = Math.min(
+      retryConfig.initialDelay * Math.pow(2, attempt),
+      retryConfig.maxDelay
+    );
+    return delay;
+  }
+
+  private async retryOperation<T>(
+    operation: () => Promise<T>,
+    context: string
+  ): Promise<T> {
+    const retryConfig = this.config.retry ?? { maxRetries: 3, initialDelay: 1000, maxDelay: 10000 };
+    let lastError: any;
+
+    for (let attempt = 0; attempt < retryConfig.maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error;
+        if (attempt < retryConfig.maxRetries - 1) {
+          const delay = this.getRetryDelay(attempt);
+          logger.warn(
+            { attempt: attempt + 1, maxRetries: retryConfig.maxRetries, delay, context, error },
+            `Operation failed, retrying...`
+          );
+          await this.delay(delay);
+        }
+      }
+    }
+
+    throw lastError;
+  }
+
+  private async importAccountTransactions(
+    actualAccountId: string,
+    accountName: string,
+    transactions: ScraperTransaction[],
+    startDate: Date
+  ): Promise<void> {
+    const mappedTransactions = this.createActualTxnsFromScraperTxns(
+      actualAccountId,
+      transactions,
+      this.api
+    );
+
+    logger.info(
+      { accountName, actualAccountId, count: mappedTransactions.length },
+      `Importing transactions`
+    );
+
+    const addTxnResult = await this.api.importTransactions(actualAccountId, mappedTransactions);
+
+    if (addTxnResult.errors?.length) {
+      logger.error(
+        { accountName, actualAccountId, errors: addTxnResult.errors },
+        `Got errors from Actual while importing transactions`
+      );
+      return;
+    }
+
+    logger.info(
+      { accountName, actualAccountId, updated: addTxnResult.updated.length, added: addTxnResult.added.length },
+      `Transactions imported to Actual`
+    );
+
+    if (this.config.onImportSuccess) {
+      this.config.onImportSuccess({
+        actualAccountId,
+        accountName,
+        updated: addTxnResult.updated,
+        added: addTxnResult.added,
+        errors: addTxnResult.errors,
+        startDate,
+      });
+    }
+  }
+
+  private async processScraper(scraperConfig: ScraperConfig): Promise<void> {
+    const scraper = new Scraper(scraperConfig, this.chromiumPath);
+    const scrapeResult = await this.retryOperation(
+      () => scraper.scrape(),
+      `Scraping ${scraperConfig.options.companyId}`
+    );
+
+    for (const scraperAccount of scrapeResult.accounts) {
+      if (!scraperAccount.txns.length) {
+        logger.warn({ account: scraperAccount.accountNumber }, `No transactions found for account`);
+        continue;
+      }
+
+      const accountName = this.createAccountName(scraper.companyId, scraperAccount.accountNumber);
+      let actualAccountId = await this.getActualAccountId(scraperAccount.accountNumber);
+
+      if (!actualAccountId) {
+        logger.warn({ accountName }, `Couldn't find account in Actual, creating a new one`);
+        actualAccountId = await this.retryOperation(
+          () => this.createAccount(accountName, scraperConfig.actualAccountType, scraperAccount),
+          `Creating account ${accountName}`
+        );
+      }
+
+      await this.retryOperation(
+        () => this.importAccountTransactions(
+          actualAccountId,
+          accountName,
+          scraperAccount.txns,
+          scraperConfig.options.startDate
+        ),
+        `Importing transactions for ${accountName}`
+      );
+    }
   }
 
   public async import(
@@ -154,58 +280,7 @@ export class ActualImporter {
 
     for (const scraperConfig of this.config.scrappers) {
       try {
-        const scraper = new Scraper(scraperConfig, this.chromiumPath);
-        const scrapeResult = await scraper.scrape();
-
-        for (const scraperAccount of scrapeResult.accounts) {
-          if (!scraperAccount.txns.length) {
-            logger.warn({ account: scraperAccount.accountNumber }, `No transactions found for account`);
-            continue;
-          }
-
-          const accountName = this.createAccountName(scraper.companyId, scraperAccount.accountNumber);
-          let actualAccountId = await this.getActualAccountId(scraperAccount.accountNumber);
-
-          // If account not found in Actual, create it
-          if (!actualAccountId) {
-            logger.warn({ accountName }, `Couldn't find account in Actual, creating a new one`);
-            actualAccountId = await this.createAccount(accountName, scraperConfig.actualAccountType, scraperAccount);
-          }
-
-          // Add transactions to Actual
-          const mappedTransactions = this.createActualTxnsFromScraperTxns(
-            actualAccountId,
-            scraperAccount.txns,
-            this.api
-          );
-          logger.info({ accountName, actualAccountId, count: mappedTransactions.length }, `Importing transactions`);
-          const addTxnResult = await this.api.importTransactions(actualAccountId, mappedTransactions);
-
-          if (addTxnResult.errors) {
-            logger.error(
-              { accountName, actualAccountId, errors: addTxnResult.errors },
-              `Got errors from Actual while importing transactions`
-            );
-
-            continue;
-          }
-
-          logger.info(
-            { accountName, actualAccountId, updated: addTxnResult.updated.length, added: addTxnResult.added.length },
-            `Transactions imported to Actual`
-          );
-
-          if (this.config.onImportSuccess) {
-            this.config.onImportSuccess({
-              actualAccountId,
-              accountName,
-              updated: addTxnResult.updated,
-              added: addTxnResult.added,
-              errors: addTxnResult.errors,
-              startDate: scraperConfig.options.startDate,
-            });
-          }
-        }
+        await this.processScraper(scraperConfig);
       } catch (err) {
         if (this.config.onImportError) {
           this.config.onImportError({

@@ -28,7 +28,7 @@ describe("ActualImporter Tests", () => {
       });
 
       // Act
-      const newConfig = importer.createImportConfigForCron({ cronTime: "daily" });
+      const newConfig = importer.createImportConfigForCron()
 
       // Assert the expected outcome
       expect(newConfig.scrappers[0].options.startDate).toEqual(new Date("2023-01-01T00:00:00Z"));

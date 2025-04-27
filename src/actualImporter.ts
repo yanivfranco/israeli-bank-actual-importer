@@ -26,7 +26,7 @@ export type OnImportSuccessArgs = {
 export type OnImportErrorArgs = {
   companyId: string;
   startDate: Date;
-  error: Error;
+  error: Error | Error[];
 };
 
 export type RetryConfig = {
@@ -161,13 +161,13 @@ export class ActualImporter {
     context: string
   ): Promise<T> {
     const retryConfig = this.config.retry ?? { maxRetries: 3, initialDelay: 1000, maxDelay: 10000 };
-    let lastError: any;
+    const errors: Error[] = [];
 
     for (let attempt = 0; attempt < retryConfig.maxRetries; attempt++) {
       try {
         return await operation();
       } catch (error) {
-        lastError = error;
+        errors.push(error as Error);
         if (attempt < retryConfig.maxRetries - 1) {
           const delay = this.getRetryDelay(attempt);
           logger.warn(
@@ -179,7 +179,10 @@ export class ActualImporter {
       }
     }
 
-    throw lastError;
+    // If we get here, all retries failed. Wrap all errors in a single error
+    const finalError = new Error(`All ${retryConfig.maxRetries} attempts failed for ${context}`);
+    (finalError as any).errors = errors;
+    throw finalError;
   }
 
   private async importAccountTransactions(
@@ -228,10 +231,10 @@ export class ActualImporter {
 
   private async processScraper(scraperConfig: ScraperConfig): Promise<void> {
     const scraper = new Scraper(scraperConfig, this.chromiumPath);
-    const scrapeResult = await this.retryOperation(
-      () => scraper.scrape(),
-      `Scraping ${scraperConfig.options.companyId}`
-    );
+      const scrapeResult = await this.retryOperation(
+        () => scraper.scrape(),
+        `Scraping ${scraperConfig.options.companyId}`
+      );
 
     for (const scraperAccount of scrapeResult.accounts) {
       if (!scraperAccount.txns.length) {
@@ -283,10 +286,12 @@ export class ActualImporter {
         await this.processScraper(scraperConfig);
       } catch (err) {
         if (this.config.onImportError) {
+          const error = err as Error;
+          const allErrors = (error as any).errors ?? [error];
           this.config.onImportError({
             companyId: scraperConfig.options.companyId,
             startDate: scraperConfig.options.startDate,
-            error: err,
+            error: allErrors,
           });
         }
         logger.error(err);

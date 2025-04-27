@@ -31,11 +31,22 @@ describe("ActualImporter Tests", () => {
   });
 
   describe("createImportConfigForCron", () => {
-    it("should override startDate if exists from lastCronRunTime", () => {
+    let getLastCronRunTimeSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      getLastCronRunTimeSpy = jest.spyOn(ActualImporter.prototype, "getLastCronRunTime");
+    });
+
+    afterEach(() => {
+      getLastCronRunTimeSpy.mockRestore();
+    });
+
+    it("should use lastCronRunTime when it is more recent than scraper startDate", () => {
       // Arrange
-      const spy = jest
-        .spyOn(ActualImporter.prototype, "getLastCronRunTime")
-        .mockReturnValue(new Date("2023-01-01T00:00:00Z"));
+      const lastCronRunTime = new Date("2023-01-01T00:00:00Z");
+      const scraperStartDate = new Date("2021-01-01");
+      getLastCronRunTimeSpy.mockReturnValue(lastCronRunTime);
+
       const importer = new ActualImporter({
         actualDataDir: "actualDataDir",
         actualPassword: "actualPassword",
@@ -45,7 +56,7 @@ describe("ActualImporter Tests", () => {
           {
             actualAccountType: "checking",
             options: {
-              startDate: new Date("2021-01-01"),
+              startDate: scraperStartDate,
               companyId: CompanyTypes.yahav,
             },
             credentials: {
@@ -57,10 +68,105 @@ describe("ActualImporter Tests", () => {
       });
 
       // Act
-      const newConfig = importer.createImportConfigForCron()
+      const newConfig = importer.createImportConfigForCron();
 
-      // Assert the expected outcome
-      expect(newConfig.scrappers[0].options.startDate).toEqual(new Date("2023-01-01T00:00:00Z"));
+      // Assert
+      expect(newConfig.scrappers[0].options.startDate).toEqual(lastCronRunTime);
+    });
+
+    it("should keep scraper startDate when it is more recent than lastCronRunTime", () => {
+      // Arrange
+      const lastCronRunTime = new Date("2021-01-01T00:00:00Z");
+      const scraperStartDate = new Date("2023-01-01");
+      getLastCronRunTimeSpy.mockReturnValue(lastCronRunTime);
+
+      const importer = new ActualImporter({
+        actualDataDir: "actualDataDir",
+        actualPassword: "actualPassword",
+        actualSyncId: "actualSyncId",
+        actualUrl: "actualUrl",
+        scrappers: [
+          {
+            actualAccountType: "checking",
+            options: {
+              startDate: scraperStartDate,
+              companyId: CompanyTypes.yahav,
+            },
+            credentials: {
+              username: "username",
+              password: "password",
+            },
+          },
+        ],
+      });
+
+      // Act
+      const newConfig = importer.createImportConfigForCron();
+
+      // Assert
+      expect(newConfig.scrappers[0].options.startDate).toEqual(scraperStartDate);
+    });
+
+    it("should use lastCronRunTime when scraper has no startDate", () => {
+      // Arrange
+      const lastCronRunTime = new Date("2023-01-01T00:00:00Z");
+      getLastCronRunTimeSpy.mockReturnValue(lastCronRunTime);
+
+      const importer = new ActualImporter({
+        actualDataDir: "actualDataDir",
+        actualPassword: "actualPassword",
+        actualSyncId: "actualSyncId",
+        actualUrl: "actualUrl",
+        scrappers: [
+          {
+            actualAccountType: "checking",
+            options: {
+              companyId: CompanyTypes.yahav,
+            } as any, // Using any to simulate missing startDate
+            credentials: {
+              username: "username",
+              password: "password",
+            },
+          },
+        ],
+      });
+
+      // Act
+      const newConfig = importer.createImportConfigForCron();
+
+      // Assert
+      expect(newConfig.scrappers[0].options.startDate).toEqual(lastCronRunTime);
+    });
+
+    it("should keep scraper startDate when lastCronRunTime is not set", () => {
+      // Arrange
+      const scraperStartDate = new Date("2023-01-01T00:00:00Z");
+
+      const importer = new ActualImporter({
+        actualDataDir: "actualDataDir",
+        actualPassword: "actualPassword",
+        actualSyncId: "actualSyncId",
+        actualUrl: "actualUrl",
+        scrappers: [
+          {
+            actualAccountType: "checking",
+            options: {
+              startDate: scraperStartDate,
+              companyId: CompanyTypes.yahav,
+            },
+            credentials: {
+              username: "username",
+              password: "password",
+            },
+          },
+        ],
+      });
+
+      // Act
+      const newConfig = importer.createImportConfigForCron();
+
+      // Assert
+      expect(newConfig.scrappers[0].options.startDate).toEqual(scraperStartDate);
     });
   });
 });

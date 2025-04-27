@@ -127,14 +127,18 @@ export class ActualImporter {
 
   public createImportConfigForCron(): ActualImporterConfig {
     // Get last cron run time from file or set it based on cron config
-    const lastCronRunTime = this.getLastCronRunTime()
-    
+    const lastCronRunTime = this.getLastCronRunTime();
 
     return {
       ...this.config,
       scrappers: this.config.scrappers.map<ScraperConfig>((s) => ({
         ...s,
-        options: { ...s.options, startDate: lastCronRunTime ?? s.options.startDate },
+        options: {
+          ...s.options,
+          startDate: lastCronRunTime && (!s.options.startDate || lastCronRunTime > s.options.startDate)
+            ? lastCronRunTime
+            : s.options.startDate,
+        },
       })),
     };
   }

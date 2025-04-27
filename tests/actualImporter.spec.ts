@@ -1,7 +1,30 @@
-import { ActualImporter, CompanyTypes } from "../src";
+import { ActualImporter, CompanyTypes, ActualImporterConfig } from "../src";
 import * as fs from "fs";
 import * as path from "path";
 import { testConfig as exampleConfig } from "./config.test.example";
+import { Account } from "@actual-app/api";
+
+// Helper function to create test configs
+const createTestConfig = (overrides: Partial<ActualImporterConfig> = {}): ActualImporterConfig => ({
+  actualDataDir: "actualDataDir",
+  actualPassword: "actualPassword",
+  actualSyncId: "actualSyncId",
+  actualUrl: "actualUrl",
+  scrappers: [
+    {
+      actualAccountType: "checking" as Account["type"],
+      options: {
+        startDate: new Date("2023-01-01T00:00:00Z"),
+        companyId: CompanyTypes.yahav,
+      },
+      credentials: {
+        username: "username",
+        password: "password",
+      },
+    },
+  ],
+  ...overrides
+});
 
 // Helper function to load test config
 const loadTestConfig = () => {
@@ -47,14 +70,10 @@ describe("ActualImporter Tests", () => {
       const scraperStartDate = new Date("2021-01-01");
       getLastCronRunTimeSpy.mockReturnValue(lastCronRunTime);
 
-      const importer = new ActualImporter({
-        actualDataDir: "actualDataDir",
-        actualPassword: "actualPassword",
-        actualSyncId: "actualSyncId",
-        actualUrl: "actualUrl",
+      const importer = new ActualImporter(createTestConfig({
         scrappers: [
           {
-            actualAccountType: "checking",
+            actualAccountType: "checking" as Account["type"],
             options: {
               startDate: scraperStartDate,
               companyId: CompanyTypes.yahav,
@@ -65,7 +84,7 @@ describe("ActualImporter Tests", () => {
             },
           },
         ],
-      });
+      }));
 
       // Act
       const newConfig = importer.createImportConfigForCron();
@@ -80,14 +99,10 @@ describe("ActualImporter Tests", () => {
       const scraperStartDate = new Date("2023-01-01");
       getLastCronRunTimeSpy.mockReturnValue(lastCronRunTime);
 
-      const importer = new ActualImporter({
-        actualDataDir: "actualDataDir",
-        actualPassword: "actualPassword",
-        actualSyncId: "actualSyncId",
-        actualUrl: "actualUrl",
+      const importer = new ActualImporter(createTestConfig({
         scrappers: [
           {
-            actualAccountType: "checking",
+            actualAccountType: "checking" as Account["type"],
             options: {
               startDate: scraperStartDate,
               companyId: CompanyTypes.yahav,
@@ -98,7 +113,7 @@ describe("ActualImporter Tests", () => {
             },
           },
         ],
-      });
+      }));
 
       // Act
       const newConfig = importer.createImportConfigForCron();
@@ -112,14 +127,10 @@ describe("ActualImporter Tests", () => {
       const lastCronRunTime = new Date("2023-01-01T00:00:00Z");
       getLastCronRunTimeSpy.mockReturnValue(lastCronRunTime);
 
-      const importer = new ActualImporter({
-        actualDataDir: "actualDataDir",
-        actualPassword: "actualPassword",
-        actualSyncId: "actualSyncId",
-        actualUrl: "actualUrl",
+      const importer = new ActualImporter(createTestConfig({
         scrappers: [
           {
-            actualAccountType: "checking",
+            actualAccountType: "checking" as Account["type"],
             options: {
               companyId: CompanyTypes.yahav,
             } as any, // Using any to simulate missing startDate
@@ -129,7 +140,7 @@ describe("ActualImporter Tests", () => {
             },
           },
         ],
-      });
+      }));
 
       // Act
       const newConfig = importer.createImportConfigForCron();
@@ -141,15 +152,87 @@ describe("ActualImporter Tests", () => {
     it("should keep scraper startDate when lastCronRunTime is not set", () => {
       // Arrange
       const scraperStartDate = new Date("2023-01-01T00:00:00Z");
+      getLastCronRunTimeSpy.mockReturnValue(null);
 
-      const importer = new ActualImporter({
-        actualDataDir: "actualDataDir",
-        actualPassword: "actualPassword",
-        actualSyncId: "actualSyncId",
-        actualUrl: "actualUrl",
+      const importer = new ActualImporter(createTestConfig({
         scrappers: [
           {
-            actualAccountType: "checking",
+            actualAccountType: "checking" as Account["type"],
+            options: {
+              startDate: scraperStartDate,
+              companyId: CompanyTypes.yahav,
+            },
+            credentials: {
+              username: "username",
+              password: "password",
+            },
+          },
+        ],
+      }));
+
+      // Act
+      const newConfig = importer.createImportConfigForCron();
+
+      // Assert
+      expect(newConfig.scrappers[0].options.startDate).toEqual(scraperStartDate);
+    });
+
+    it("should keep original startDate on first cron run when runOnInit is true", () => {
+      // Arrange
+      const scraperStartDate = new Date("2023-01-01T00:00:00Z");
+      getLastCronRunTimeSpy.mockReturnValue(null); // Simulate first run - no lastCronRunTime
+
+      const importer = new ActualImporter(createTestConfig({
+        scrappers: [
+          {
+            actualAccountType: "checking" as Account["type"],
+            options: {
+              startDate: scraperStartDate,
+              companyId: CompanyTypes.yahav,
+            },
+            credentials: {
+              username: "username",
+              password: "password",
+            },
+          },
+        ],
+      }));
+
+      // Act
+      const newConfig = importer.createImportConfigForCron();
+
+      // Assert
+      expect(newConfig.scrappers[0].options.startDate).toEqual(scraperStartDate);
+      expect(getLastCronRunTimeSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe("cronHandler", () => {
+    let getLastCronRunTimeSpy: jest.SpyInstance;
+    let processScraperSpy: jest.SpyInstance;
+    let initSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      getLastCronRunTimeSpy = jest.spyOn(ActualImporter.prototype, "getLastCronRunTime");
+      processScraperSpy = jest.spyOn(ActualImporter.prototype as any, "processScraper").mockResolvedValue(undefined);
+      initSpy = jest.spyOn(ActualImporter.prototype, "init").mockResolvedValue();
+    });
+
+    afterEach(() => {
+      getLastCronRunTimeSpy.mockRestore();
+      processScraperSpy.mockRestore();
+      initSpy.mockRestore();
+    });
+
+    it("should keep original startDate when processing scrapers on first cron run", async () => {
+      // Arrange
+      const scraperStartDate = new Date("2023-01-01T00:00:00Z");
+      getLastCronRunTimeSpy.mockReturnValue(null); // Simulate first run - no lastCronRunTime
+
+      const config = createTestConfig({
+        scrappers: [
+          {
+            actualAccountType: "checking" as Account["type"],
             options: {
               startDate: scraperStartDate,
               companyId: CompanyTypes.yahav,
@@ -162,11 +245,17 @@ describe("ActualImporter Tests", () => {
         ],
       });
 
+      const importer = new ActualImporter(config);      
+
       // Act
-      const newConfig = importer.createImportConfigForCron();
+      await importer["cronHandler"]();
 
       // Assert
-      expect(newConfig.scrappers[0].options.startDate).toEqual(scraperStartDate);
+      expect(processScraperSpy).toHaveBeenCalledWith(expect.objectContaining({
+        options: expect.objectContaining({
+          startDate: scraperStartDate
+        })
+      }));
     });
   });
 });

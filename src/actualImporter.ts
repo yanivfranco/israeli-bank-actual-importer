@@ -75,10 +75,10 @@ export class ActualImporter {
         this.config.onCronStart();
       }
 
-      this.config = this.createImportConfigForCron();
-      logger.info(`Starting import with config: ${JSON.stringify(this.config)}`);
+      const cronConfig = this.createImportConfigForCron();
+      logger.info(`Starting import with config: ${JSON.stringify(cronConfig)}`);
 
-      const isSuccessful = await this.import({ shouldShutdown: false });
+      const isSuccessful = await this.import({ shouldShutdown: false, config: cronConfig });
       if (isSuccessful) {
         logger.info(`Finished cron job successfully`);
         this.updateLastCronRunTime();
@@ -270,7 +270,7 @@ export class ActualImporter {
   }
 
   public async import(
-    { shouldShutdown }: { shouldShutdown?: boolean; config?: ActualImporterConfig } = {
+    { shouldShutdown, config }: { shouldShutdown?: boolean; config?: ActualImporterConfig } = {
       shouldShutdown: true,
       config: this.config,
     }
@@ -281,11 +281,13 @@ export class ActualImporter {
       await this.init();
     }
 
-    if (this.config.cleanup) {
+    const importConfig = config || this.config;
+
+    if (importConfig.cleanup) {
       await this.cleanup();
     }
 
-    for (const scraperConfig of this.config.scrappers) {
+    for (const scraperConfig of importConfig.scrappers) {
       try {
         await this.processScraper(scraperConfig);
       } catch (err) {

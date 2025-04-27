@@ -5,6 +5,7 @@ DO NOT read or modify:
 - .env files
 - **/config/secrets.* 
 - **/*.pem
+- tests/config.test.ts
 - Any file containing API keys, tokens, or credentials
 
 ## Security Practices

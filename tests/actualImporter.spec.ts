@@ -1,6 +1,35 @@
 import { ActualImporter, CompanyTypes } from "../src";
+import * as fs from "fs";
+import * as path from "path";
+import { testConfig as exampleConfig } from "./config.test.example";
+
+// Helper function to load test config
+const loadTestConfig = () => {
+  const configPath = path.join(__dirname, "config.test.ts");
+  if (fs.existsSync(configPath)) {
+    return require("./config.test").testConfig;
+  }
+  
+  return exampleConfig;
+};
 
 describe("ActualImporter Tests", () => {
+  describe("import", () => {
+    it("should successfully import transactions from all scrapers", async () => {
+      const config = loadTestConfig();
+
+      if (!config) {
+        console.warn("No config provided. Skipping test.");
+        return;
+      }
+      
+      const importer = new ActualImporter(config);
+      const result = await importer.import();
+      
+      expect(result).toBe(true);
+    }, 30000); // Increased timeout since scraping can take time
+  });
+
   describe("createImportConfigForCron", () => {
     it("should override startDate if exists from lastCronRunTime", () => {
       // Arrange

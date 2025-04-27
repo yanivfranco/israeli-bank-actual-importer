@@ -6,7 +6,7 @@ import * as actualInjected from "@actual-app/api/dist/injected";
 import * as fs from "fs";
 import { getPuppeteerConfig } from "israeli-bank-scrapers";
 import { Transaction as ScraperTransaction, TransactionsAccount } from "israeli-bank-scrapers/lib/transactions";
-import * as nodeCron from "node-cron";
+import { CronJob, CronJobParams } from "cron";
 import * as readline from "readline";
 import { match } from "ts-pattern";
 import { ActualApi, actualApi } from "./actualApi";
@@ -42,12 +42,8 @@ export type ActualImporterConfig = {
   onImportError?: (result: OnImportErrorArgs) => void;
   onImportSuccess?: (result: OnImportSuccessArgs) => void;
   onImportFinish?: () => void;
-};
-
-export type CronConfig = {
-  cronTime: "test" | "daily" | "weekly" | "monthly" | "biweekly";
-  runOnStart?: boolean;
-  timezone?: string;
+  onCronStart?: () => void;
+  onCronFinish?: () => void;
 };
 
 export class ActualImporter {
@@ -66,30 +62,13 @@ export class ActualImporter {
     }
   }
 
-  public async cron(cornConfig: CronConfig) {
-    if (!this.isInitialized) {
-      logger.info("Initializing Actual API");
-      await this.init();
-    }
+  private async cronHandler(): Promise<void> {
+    try {
+      if (this.config.onCronStart) {
+        this.config.onCronStart();
+      }
 
-    if (cornConfig.runOnStart) {
-      await this.import({ shouldShutdown: false });
-      this.updateLastCronRunTime();
-    }
-
-    let cronTime = match(cornConfig.cronTime)
-      .with("test", () => "* * * * *")
-      .with("daily", () => "0 0 * * *")
-      .with("weekly", () => "0 0 * * 0")
-      .with("monthly", () => "0 0 1 * *")
-      .with("biweekly", () => "0 0 1,15 * *")
-      .exhaustive();
-
-    logger.info(`Starting cron job with time: ${cronTime}`);
-
-    nodeCron.schedule(cronTime, async () => {
-      this.config = this.createImportConfigForCron(cornConfig);
-
+      this.config = this.createImportConfigForCron();
       logger.info(`Starting import with config: ${JSON.stringify(this.config)}`);
 
       const isSuccessful = await this.import({ shouldShutdown: false });
@@ -97,7 +76,30 @@ export class ActualImporter {
         logger.info(`Finished cron job successfully`);
         this.updateLastCronRunTime();
       }
-    });
+
+      if (this.config.onCronFinish) {
+        this.config.onCronFinish();
+      }
+    } catch (error) {
+      logger.error('Error in cron job:', error);
+    }
+  }
+
+  public async cron(cronExpression: string | Date, cronParams?: Partial<CronJobParams>): Promise<CronJob> {
+    if (!this.isInitialized) {
+      logger.info("Initializing Actual API");
+      await this.init();
+    }
+
+    logger.info(`Starting cron job, cron expression: ${cronExpression}`);
+
+    const job = new CronJob(cronExpression, () => this.cronHandler(), null, true, cronParams?.timeZone);
+
+    if (cronParams?.runOnInit) {
+      await this.cronHandler();
+    }
+
+    return job;
   }
 
   private updateLastCronRunTime() {
@@ -116,23 +118,16 @@ export class ActualImporter {
     );
   }
 
-  createImportConfigForCron(cronConfig: CronConfig): ActualImporterConfig {
+  private createImportConfigForCron(): ActualImporterConfig {
     // Get last cron run time from file or set it based on cron config
-    const lastCronRunTime = this.getLastCronRunTime();
-    const timeBefore = match(cronConfig.cronTime)
-      .with("test", () => 1000 * 60 * 60 * 24 * 60) // 60 days ago
-      .with("daily", () => 1000 * 60 * 60 * 24) // 1 day ago
-      .with("weekly", () => 1000 * 60 * 60 * 24 * 7) // 7 days ago
-      .with("monthly", () => 1000 * 60 * 60 * 24 * 30) // 30 days ago
-      .with("biweekly", () => 1000 * 60 * 60 * 24 * 15) // 15 days ago
-      .exhaustive();
-    const startDate = lastCronRunTime ?? new Date(Date.now() - timeBefore * 2); // 2 * timeBefore to make sure we don't miss any transactions
+    const lastCronRunTime = this.getLastCronRunTime()
+    
 
     return {
       ...this.config,
       scrappers: this.config.scrappers.map<ScraperConfig>((s) => ({
         ...s,
-        options: { ...s.options, startDate },
+        options: { ...s.options, startDate: lastCronRunTime ?? s.options.startDate },
       })),
     };
   }
@@ -383,4 +378,3 @@ export class ActualImporter {
     }
   }
 }
-1;

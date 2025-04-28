@@ -76,7 +76,7 @@ export class ActualImporter {
       }
 
       const cronConfig = this.createImportConfigForCron();
-      logger.info(`Starting import with config: ${JSON.stringify(cronConfig)}`);
+      logger.info(`Starting cron job`)
 
       const isSuccessful = await this.import({ shouldShutdown: false, config: cronConfig });
       if (isSuccessful) {

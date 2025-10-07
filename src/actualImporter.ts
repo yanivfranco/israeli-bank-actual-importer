@@ -421,8 +421,8 @@ export class ActualImporter {
     return scraperTransactions
       .map((t) => {
         // Skip transactions that are not completed or don't have an identifier
-        if (!t.identifier || t.status !== "completed") {
-          logger.warn({ txn: t }, `Skipping transaction without identifier or not completed`);
+        if (!t.identifier) {
+          logger.warn({ txn: t }, `Skipping transaction without identifier`);
           return null;
         }
 

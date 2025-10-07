@@ -16,10 +16,10 @@ You can set a global retry configuration that applies to all scrapers:
 const config: ActualImporterConfig = {
   // ... other config
   retry: {
-    maxRetries: 3,        // Number of retry attempts
-    initialDelay: 1000,   // Initial delay in ms
-    maxDelay: 10000       // Maximum delay in ms (uses exponential backoff)
-  }
+    maxRetries: 3, // Number of retry attempts
+    initialDelay: 1000, // Initial delay in ms
+    maxDelay: 10000, // Maximum delay in ms (uses exponential backoff)
+  },
 };
 ```
 
@@ -33,34 +33,46 @@ const config: ActualImporterConfig = {
   retry: {
     maxRetries: 3,
     initialDelay: 1000,
-    maxDelay: 10000
+    maxDelay: 10000,
   },
   scrappers: [
     {
       // This scraper uses the global retry config
       actualAccountType: "checking",
-      options: { /* ... */ },
-      credentials: { /* ... */ }
+      options: {
+        /* ... */
+      },
+      credentials: {
+        /* ... */
+      },
     },
     {
       // This scraper uses a custom retry config
       actualAccountType: "credit",
-      options: { /* ... */ },
-      credentials: { /* ... */ },
+      options: {
+        /* ... */
+      },
+      credentials: {
+        /* ... */
+      },
       retry: {
-        maxRetries: 5,      // More retries for this account
+        maxRetries: 5, // More retries for this account
         initialDelay: 2000,
-        maxDelay: 20000
-      }
+        maxDelay: 20000,
+      },
     },
     {
       // This scraper has retry disabled
       actualAccountType: "savings",
-      options: { /* ... */ },
-      credentials: { /* ... */ },
-      retry: false  // No retries for this account
-    }
-  ]
+      options: {
+        /* ... */
+      },
+      credentials: {
+        /* ... */
+      },
+      retry: false, // No retries for this account
+    },
+  ],
 };
 ```
 
@@ -73,6 +85,7 @@ const config: ActualImporterConfig = {
 The project includes tests that verify the importing functionality. To run the tests with your own bank credentials:
 
 1. Copy the example test config:
+
    ```bash
    cp tests/config.test.example.ts tests/config.test.ts
    ```

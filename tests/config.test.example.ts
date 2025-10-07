@@ -1,6 +1,5 @@
-import { ActualImporterConfig } from "../src/actualImporter";
-import type { ScraperConfig } from "../src/scraper";
 import { CompanyTypes } from "israeli-bank-scrapers";
+import { ActualImporterConfig } from "../src/actualImporter";
 
 export const testConfig: ActualImporterConfig = {
   actualSyncId: "example-sync-id",
@@ -14,13 +13,18 @@ export const testConfig: ActualImporterConfig = {
         companyId: CompanyTypes.hapoalim,
         startDate: new Date("2024-01-01"),
       },
+      retry: {
+        initialDelay: 1000,
+        maxDelay: 5000,
+        maxRetries: 1,
+      },
       credentials: {
         username: "example-username",
         password: "example-password",
-        id: "example-id"
-      }
-    }
+        id: "example-id",
+      },
+    },
   ],
   shouldDownloadChromium: false,
-  chromiumInstallPath: "./cache"
+  chromiumInstallPath: "./cache",
 };

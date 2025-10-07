@@ -151,14 +151,23 @@ export class ActualImporter {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  private getRetryDelay(attempt: number): number {
-    const retryConfig = this.config.retry ?? { maxRetries: 3, initialDelay: 1000, maxDelay: 10000 };
+  private getRetryDelay(attempt: number, retryConfig: RetryConfig): number {
     const delay = Math.min(retryConfig.initialDelay * Math.pow(2, attempt), retryConfig.maxDelay);
     return delay;
   }
 
-  private async retryOperation<T>(operation: () => Promise<T>, context: string): Promise<T> {
-    const retryConfig = this.config.retry ?? { maxRetries: 1, initialDelay: 1000, maxDelay: 10000 };
+  private async retryOperation<T>(
+    operation: () => Promise<T>,
+    context: string,
+    customRetry?: RetryConfig | false
+  ): Promise<T> {
+    // If retry is explicitly disabled (false), run operation once
+    if (customRetry === false) {
+      return await operation();
+    }
+
+    // Use custom retry config, or fall back to global config
+    const retryConfig = customRetry ?? this.config.retry ?? { maxRetries: 1, initialDelay: 1000, maxDelay: 10000 };
     const errors: Error[] = [];
 
     for (let attempt = 0; attempt < retryConfig.maxRetries; attempt++) {
@@ -167,7 +176,7 @@ export class ActualImporter {
       } catch (error) {
         errors.push(error as Error);
         if (attempt < retryConfig.maxRetries - 1) {
-          const delay = this.getRetryDelay(attempt);
+          const delay = this.getRetryDelay(attempt, retryConfig);
           logger.warn(
             { attempt: attempt + 1, maxRetries: retryConfig.maxRetries, delay, context, error: error?.message },
             `Operation failed, retrying...`
@@ -222,9 +231,12 @@ export class ActualImporter {
 
   private async processScraper(scraperConfig: ScraperConfig): Promise<void> {
     const scraper = new Scraper(scraperConfig, this.chromiumPath);
+    const retryConfig = scraperConfig.retry;
+
     const scrapeResult = await this.retryOperation(
       () => scraper.scrape(),
-      `Scraping ${scraperConfig.options.companyId}`
+      `Scraping ${scraperConfig.options.companyId}`,
+      retryConfig
     );
 
     for (const scraperAccount of scrapeResult.accounts) {
@@ -240,7 +252,8 @@ export class ActualImporter {
         logger.warn({ accountName }, `Couldn't find account in Actual, creating a new one`);
         actualAccountId = await this.retryOperation(
           () => this.createAccount(accountName, scraperConfig.actualAccountType, scraperAccount),
-          `Creating account ${accountName}`
+          `Creating account ${accountName}`,
+          retryConfig
         );
       }
 
@@ -252,7 +265,8 @@ export class ActualImporter {
             scraperAccount.txns,
             scraperConfig.options.startDate
           ),
-        `Importing transactions for ${accountName}`
+        `Importing transactions for ${accountName}`,
+        retryConfig
       );
     }
   }
@@ -408,6 +422,7 @@ export class ActualImporter {
       .map((t) => {
         // Skip transactions that are not completed or don't have an identifier
         if (!t.identifier || t.status !== "completed") {
+          logger.warn({ txn: t }, `Skipping transaction without identifier or not completed`);
           return null;
         }
 

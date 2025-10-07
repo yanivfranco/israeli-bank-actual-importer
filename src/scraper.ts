@@ -2,12 +2,14 @@ import { Account } from "@actual-app/api";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { ScraperCredentials, ScraperOptions, ScraperScrapingResult, createScraper } from "israeli-bank-scrapers";
 import { logger } from "./logger";
+import { RetryConfig } from "./actualImporter";
 
 export interface ScraperConfig {
   options: ScraperOptions;
   credentials: ScraperCredentials;
   shouldUseCache?: boolean;
   actualAccountType: Account["type"];
+  retry?: RetryConfig | false;
 }
 
 export class Scraper {

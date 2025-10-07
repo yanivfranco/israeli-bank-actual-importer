@@ -3,12 +3,11 @@ import { Account } from "@actual-app/api";
 import { Transaction as ActualTransaction } from "@actual-app/api";
 // @ts-ignore
 import * as actualInjected from "@actual-app/api/dist/injected";
+import { CronJob, CronJobParams } from "cron";
 import * as fs from "fs";
 import { getPuppeteerConfig } from "israeli-bank-scrapers";
 import { Transaction as ScraperTransaction, TransactionsAccount } from "israeli-bank-scrapers/lib/transactions";
-import { CronJob, CronJobParams } from "cron";
 import * as readline from "readline";
-import { match } from "ts-pattern";
 import { ActualApi, actualApi } from "./actualApi";
 import { logger } from "./logger";
 import { Scraper, ScraperConfig } from "./scraper";
@@ -76,7 +75,7 @@ export class ActualImporter {
       }
 
       const cronConfig = this.createImportConfigForCron();
-      logger.info(`Starting cron job`)
+      logger.info(`Starting cron job`);
 
       const isSuccessful = await this.import({ shouldShutdown: false, config: cronConfig });
       if (isSuccessful) {
@@ -88,7 +87,7 @@ export class ActualImporter {
         this.config.onCronFinish();
       }
     } catch (error) {
-      logger.error('Error in cron job:', error);
+      logger.error("Error in cron job:", error);
     }
   }
 
@@ -135,9 +134,10 @@ export class ActualImporter {
         ...s,
         options: {
           ...s.options,
-          startDate: lastCronRunTime && (!s.options.startDate || lastCronRunTime > s.options.startDate)
-            ? lastCronRunTime
-            : s.options.startDate,
+          startDate:
+            lastCronRunTime && (!s.options.startDate || lastCronRunTime > s.options.startDate)
+              ? lastCronRunTime
+              : s.options.startDate,
         },
       })),
     };
@@ -148,23 +148,17 @@ export class ActualImporter {
   }
 
   private async delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private getRetryDelay(attempt: number): number {
     const retryConfig = this.config.retry ?? { maxRetries: 3, initialDelay: 1000, maxDelay: 10000 };
-    const delay = Math.min(
-      retryConfig.initialDelay * Math.pow(2, attempt),
-      retryConfig.maxDelay
-    );
+    const delay = Math.min(retryConfig.initialDelay * Math.pow(2, attempt), retryConfig.maxDelay);
     return delay;
   }
 
-  private async retryOperation<T>(
-    operation: () => Promise<T>,
-    context: string
-  ): Promise<T> {
-    const retryConfig = this.config.retry ?? { maxRetries: 3, initialDelay: 1000, maxDelay: 10000 };
+  private async retryOperation<T>(operation: () => Promise<T>, context: string): Promise<T> {
+    const retryConfig = this.config.retry ?? { maxRetries: 1, initialDelay: 1000, maxDelay: 10000 };
     const errors: Error[] = [];
 
     for (let attempt = 0; attempt < retryConfig.maxRetries; attempt++) {
@@ -175,7 +169,7 @@ export class ActualImporter {
         if (attempt < retryConfig.maxRetries - 1) {
           const delay = this.getRetryDelay(attempt);
           logger.warn(
-            { attempt: attempt + 1, maxRetries: retryConfig.maxRetries, delay, context, error },
+            { attempt: attempt + 1, maxRetries: retryConfig.maxRetries, delay, context, error: error?.message },
             `Operation failed, retrying...`
           );
           await this.delay(delay);
@@ -195,16 +189,9 @@ export class ActualImporter {
     transactions: ScraperTransaction[],
     startDate: Date
   ): Promise<void> {
-    const mappedTransactions = this.createActualTxnsFromScraperTxns(
-      actualAccountId,
-      transactions,
-      this.api
-    );
+    const mappedTransactions = this.createActualTxnsFromScraperTxns(actualAccountId, transactions, this.api);
 
-    logger.info(
-      { accountName, actualAccountId, count: mappedTransactions.length },
-      `Importing transactions`
-    );
+    logger.info({ accountName, actualAccountId, count: mappedTransactions.length }, `Importing transactions`);
 
     const addTxnResult = await this.api.importTransactions(actualAccountId, mappedTransactions);
 
@@ -235,10 +222,10 @@ export class ActualImporter {
 
   private async processScraper(scraperConfig: ScraperConfig): Promise<void> {
     const scraper = new Scraper(scraperConfig, this.chromiumPath);
-      const scrapeResult = await this.retryOperation(
-        () => scraper.scrape(),
-        `Scraping ${scraperConfig.options.companyId}`
-      );
+    const scrapeResult = await this.retryOperation(
+      () => scraper.scrape(),
+      `Scraping ${scraperConfig.options.companyId}`
+    );
 
     for (const scraperAccount of scrapeResult.accounts) {
       if (!scraperAccount.txns.length) {
@@ -258,12 +245,13 @@ export class ActualImporter {
       }
 
       await this.retryOperation(
-        () => this.importAccountTransactions(
-          actualAccountId,
-          accountName,
-          scraperAccount.txns,
-          scraperConfig.options.startDate
-        ),
+        () =>
+          this.importAccountTransactions(
+            actualAccountId,
+            accountName,
+            scraperAccount.txns,
+            scraperConfig.options.startDate
+          ),
         `Importing transactions for ${accountName}`
       );
     }
@@ -418,8 +406,8 @@ export class ActualImporter {
   ): ActualTransaction[] {
     return scraperTransactions
       .map((t) => {
-        // Skip transactions without an identifier
-        if (!t.identifier) {
+        // Skip transactions that are not completed or don't have an identifier
+        if (!t.identifier || t.status !== "completed") {
           return null;
         }
 

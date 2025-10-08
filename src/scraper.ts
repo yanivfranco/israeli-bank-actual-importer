@@ -1,6 +1,6 @@
 import { Account } from "@actual-app/api";
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { ScraperCredentials, ScraperOptions, ScraperScrapingResult, createScraper } from "israeli-bank-scrapers";
+import { ScraperCredentials, ScraperOptions, ScraperScrapingResult, createScraper } from "israeli-bank-scrapers-forked";
 import { RetryConfig } from "./actualImporter";
 import { logger } from "./logger";
 

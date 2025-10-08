@@ -1278,11 +1278,6 @@ colorette@^2.0.7:
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-2.0.20.tgz#9eb793e6833067f7235902fcd3b09917a000a95a"
   integrity sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==
 
-commander@^2.15.1:
-  version "2.20.3"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
-  integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
-
 compare-versions@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/compare-versions/-/compare-versions-6.1.0.tgz#3f2131e3ae93577df111dba133e6db876ffe127a"
@@ -2283,15 +2278,14 @@ isexe@^2.0.0:
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
-israeli-bank-scrapers@^6.2.2:
-  version "6.2.2"
-  resolved "https://registry.yarnpkg.com/israeli-bank-scrapers/-/israeli-bank-scrapers-6.2.2.tgz#385e37e98809b5a456c2f37f72f38fc5822520bb"
-  integrity sha512-G7RW6CaXRjNp6k8jC5GNuh7KxM4QhEI/mZoQeWWveo2cQZBwl4OwpG7cY3x7Wkm9fCN0k4FJ1MPo0svcTzhMZw==
+israeli-bank-scrapers-forked@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/israeli-bank-scrapers-forked/-/israeli-bank-scrapers-forked-1.0.2.tgz#54421cac6e1d45ab7894d40b911d1fce7ebc2ff0"
+  integrity sha512-QWxDr//UHAiwAhJYRyfNuCyFDARKy9Pn6YdLlNsqDvhcH/3k2MBZ1jqx+VRIEn2NCakh6FLtE/v74y1ekkaMAA==
   dependencies:
     build-url "^2.0.0"
     core-js "^3.1.4"
     debug "^4.3.2"
-    json2csv "^4.5.4"
     lodash "^4.17.10"
     moment "^2.22.2"
     moment-timezone "^0.5.37"
@@ -2780,15 +2774,6 @@ json-stable-stringify-without-jsonify@^1.0.1:
   resolved "https://registry.yarnpkg.com/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz#9db7b59496ad3f3cfef30a75142d2d930ad72651"
   integrity sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==
 
-json2csv@^4.5.4:
-  version "4.5.4"
-  resolved "https://registry.yarnpkg.com/json2csv/-/json2csv-4.5.4.tgz#2b59c2869a137ec48cd2e243e0180466155f773f"
-  integrity sha512-YxBhY4Lmn8IvVZ36nqg5omxneLy9JlorkqW1j/EDCeqvmi+CQ4uM+wsvXlcIqvGDewIPXMC/O/oF8DX9EH5aoA==
-  dependencies:
-    commander "^2.15.1"
-    jsonparse "^1.3.1"
-    lodash.get "^4.4.2"
-
 json5@^2.2.3:
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.3.tgz#78cd6f1a19bdc12b73db5ad0c61efd66c1e29283"
@@ -2809,11 +2794,6 @@ jsonfile@^6.0.1:
     universalify "^2.0.0"
   optionalDependencies:
     graceful-fs "^4.1.6"
-
-jsonparse@^1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/jsonparse/-/jsonparse-1.3.1.tgz#3f4dae4a91fac315f71062f8521cc239f1366280"
-  integrity sha512-POQXvpdL69+CluYsillJ7SUhKvytYjW9vG/GKpnf+xP8UWgYEM/RaMzHHofbALDiKbbP1W8UEYmgGl39WkPZsg==
 
 keyv@^3.0.0:
   version "3.1.0"
@@ -2873,11 +2853,6 @@ locate-path@^6.0.0:
   integrity sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==
   dependencies:
     p-locate "^5.0.0"
-
-lodash.get@^4.4.2:
-  version "4.4.2"
-  resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
-  integrity sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==
 
 lodash.memoize@4.x:
   version "4.1.2"

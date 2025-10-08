@@ -5,8 +5,8 @@ import { Transaction as ActualTransaction } from "@actual-app/api";
 import * as actualInjected from "@actual-app/api/dist/injected";
 import { CronJob, CronJobParams } from "cron";
 import * as fs from "fs";
-import { getPuppeteerConfig } from "israeli-bank-scrapers";
-import { Transaction as ScraperTransaction, TransactionsAccount } from "israeli-bank-scrapers/lib/transactions";
+import { getPuppeteerConfig } from "israeli-bank-scrapers-forked";
+import { Transaction as ScraperTransaction, TransactionsAccount } from "israeli-bank-scrapers-forked/lib/transactions";
 import * as readline from "readline";
 import { ActualApi, actualApi } from "./actualApi";
 import { logger } from "./logger";
@@ -199,6 +199,7 @@ export class ActualImporter {
     startDate: Date
   ): Promise<void> {
     const mappedTransactions = this.createActualTxnsFromScraperTxns(actualAccountId, transactions, this.api);
+    const txs = await this.api.getTransactions(actualAccountId, "2025-09-15", "2025-10-15");
 
     logger.info({ accountName, actualAccountId, count: mappedTransactions.length }, `Importing transactions`);
 
@@ -427,7 +428,7 @@ export class ActualImporter {
         }
 
         return {
-          imported_id: t.identifier,
+          imported_id: `${t.identifier}`,
           payee_name: t.description,
           account: accountId,
           date: new Date(t.date),

@@ -1,4 +1,4 @@
-import { CompanyTypes } from "israeli-bank-scrapers";
+import { CompanyTypes } from "israeli-bank-scrapers-forked";
 import { ActualImporterConfig } from "../src/actualImporter";
 
 export const testConfig: ActualImporterConfig = {

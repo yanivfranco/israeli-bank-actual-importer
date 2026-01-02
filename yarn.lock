@@ -1134,11 +1134,6 @@ buffer@^6.0.3:
     base64-js "^1.3.1"
     ieee754 "^1.2.1"
 
-build-url@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/build-url/-/build-url-2.0.0.tgz#7bdd4045e51caa96c1586990e4ca514937598fc2"
-  integrity sha512-LYvvOlDc9jT07wFXTQTKoQLYaXIJriVl/DgatTsSzY963+ip1O7M6G/jWBrlKKJ1L7HGD3oK+WykmOvbcSYXlQ==
-
 bytes@3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.2.tgz#8b0beeb98605adf1b128fa4386403c009e0221a5"
@@ -2278,12 +2273,11 @@ isexe@^2.0.0:
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
-israeli-bank-scrapers-forked@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/israeli-bank-scrapers-forked/-/israeli-bank-scrapers-forked-1.0.2.tgz#54421cac6e1d45ab7894d40b911d1fce7ebc2ff0"
-  integrity sha512-QWxDr//UHAiwAhJYRyfNuCyFDARKy9Pn6YdLlNsqDvhcH/3k2MBZ1jqx+VRIEn2NCakh6FLtE/v74y1ekkaMAA==
+israeli-bank-scrapers@^6.3.7:
+  version "6.3.7"
+  resolved "https://registry.yarnpkg.com/israeli-bank-scrapers/-/israeli-bank-scrapers-6.3.7.tgz#ebe49672cbd7c4755853ddc55ad37ae0e017a075"
+  integrity sha512-mKeEhVEVJrlCbLRjKBggS1x2zlW0ZV6nQlAJw22IAnIuZ9RWw1oQCHd4zERlhFzHZSKUIBsmv7elH9sxgIx8mQ==
   dependencies:
-    build-url "^2.0.0"
     core-js "^3.1.4"
     debug "^4.3.2"
     lodash "^4.17.10"
@@ -2291,6 +2285,7 @@ israeli-bank-scrapers-forked@^1.0.2:
     moment-timezone "^0.5.37"
     node-fetch "^2.2.0"
     puppeteer "22.15.0"
+    utility-types "^3.11.0"
     uuid "^9.0.1"
 
 istanbul-lib-coverage@^3.0.0, istanbul-lib-coverage@^3.2.0:
@@ -4132,6 +4127,11 @@ util-deprecate@^1.0.1, util-deprecate@~1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
   integrity sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==
+
+utility-types@^3.11.0:
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/utility-types/-/utility-types-3.11.0.tgz#607c40edb4f258915e901ea7995607fdf319424c"
+  integrity sha512-6Z7Ma2aVEWisaL6TvBCy7P8rm2LQoPv6dJ7ecIaIixHcwfbJ0x7mWdbcwlIM5IGQxPZSFYeqRCqlOOeKoJYMkw==
 
 uuid@^9.0.0, uuid@^9.0.1:
   version "9.0.1"

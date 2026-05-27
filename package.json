@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@actual-app/api": "^24.10.1",
+    "@actual-app/api": "^26.5.0",
     "cron": "^4.3.0",
     "download-chromium": "^3.0.0",
     "israeli-bank-scrapers": "^6.6.1",

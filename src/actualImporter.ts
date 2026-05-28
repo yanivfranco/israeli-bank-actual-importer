@@ -1,8 +1,7 @@
 import { Account } from "@actual-app/api";
 
 import { Transaction as ActualTransaction } from "@actual-app/api";
-// @ts-ignore
-import * as actualInjected from "@actual-app/api/dist/injected";
+
 import { CronJob, CronJobParams } from "cron";
 import * as fs from "fs";
 import { getPuppeteerConfig } from "israeli-bank-scrapers";
@@ -336,11 +335,9 @@ export class ActualImporter {
       balance
     );
 
-    // Add external account number as a note
-    await actualInjected.send("notes-save", {
-      id: `account-${newAccountId}`,
-      note: this.createAccountNoteString(scraperAccount.accountNumber),
-    });
+    // Note: notes-save via internal API removed in @actual-app/api v26
+    // Account number is logged for manual reference
+    logger.info({ accountName, newAccountId, accountNumber: scraperAccount.accountNumber }, `Account note: ${this.createAccountNoteString(scraperAccount.accountNumber)}`);
     logger.info({ accountName, newAccountId }, `Account created in Actual`);
     return newAccountId;
   }

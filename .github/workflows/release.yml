@@ -19,17 +19,25 @@ jobs:
       - name: Build
         run: yarn build
       - name: Release to Github and NPM
+        id: release
         uses: cycjimmy/semantic-release-action@v4.1.0
         with:
           branches: |
             [
               'main'
             ]
-
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         timeout-minutes: 10
+      - name: Trigger MyFinance rebuild
+        if: steps.release.outputs.new_release_published == 'true'
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.MYFINANCE_PAT }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/yanivfranco/MyFinance/dispatches \
+            -d '{"event_type":"importer-updated","client_payload":{"version":"${{ steps.release.outputs.new_release_version }}"}}'
 permissions:
   contents: write
   packages: write

@@ -1,5 +1,8 @@
 declare module "@actual-app/api" {
-  export function init(config: { serverURL: string; dataDir: string; password: string }): Promise<void>;
+  export interface ActualInitHandle {
+    send: <T = unknown>(name: string, args?: unknown) => Promise<T>;
+  }
+  export function init(config: { serverURL: string; dataDir: string; password: string }): Promise<ActualInitHandle>;
   export function shutdown(): Promise<void>;
 
   export function downloadBudget(budgetId: string): Promise<void>;

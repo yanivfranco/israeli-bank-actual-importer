@@ -3,8 +3,17 @@ import { existsSync, mkdirSync, rmdirSync } from "fs";
 import { ActualImporterConfig } from "./actualImporter";
 
 export type ActualApi = typeof import("@actual-app/api");
+export type ActualSend = <T = unknown>(name: string, args?: unknown) => Promise<T>;
 
 let initialized = false;
+let handleSend: ActualSend | null = null;
+
+export const send: ActualSend = (name, args) => {
+  if (!handleSend) {
+    throw new Error("Actual API has not been initialized");
+  }
+  return handleSend(name, args);
+};
 
 export const actualApi = async ({
   actualUrl: serverURL,
@@ -18,11 +27,12 @@ export const actualApi = async ({
     }
     mkdirSync(dataDir);
 
-    await actual.init({
+    const handle = await actual.init({
       serverURL,
       dataDir,
       password,
     });
+    handleSend = handle.send;
     initialized = true;
   }
 

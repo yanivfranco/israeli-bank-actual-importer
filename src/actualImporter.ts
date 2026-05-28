@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { getPuppeteerConfig } from "israeli-bank-scrapers";
 import { Transaction as ScraperTransaction, TransactionsAccount } from "israeli-bank-scrapers/lib/transactions";
 import * as readline from "readline";
-import { ActualApi, actualApi } from "./actualApi";
+import { ActualApi, actualApi, send as actualSend } from "./actualApi";
 import { logger } from "./logger";
 import { Scraper, ScraperConfig } from "./scraper";
 const download = require("download-chromium");
@@ -119,7 +119,7 @@ export class ActualImporter {
 
     // 3 day before to make sure we don't miss any transactions
     return new Date(
-      new Date(fs.readFileSync(this.lastCronRunTimeFilePath, "utf8")).getTime() - 1000 * 60 * 60 * 24 * 3
+      new Date(fs.readFileSync(this.lastCronRunTimeFilePath, "utf8")).getTime() - 1000 * 60 * 60 * 24 * 3,
     );
   }
 
@@ -158,7 +158,7 @@ export class ActualImporter {
   private async retryOperation<T>(
     operation: () => Promise<T>,
     context: string,
-    customRetry?: RetryConfig | false
+    customRetry?: RetryConfig | false,
   ): Promise<T> {
     // If retry is explicitly disabled (false), run operation once
     if (customRetry === false) {
@@ -178,7 +178,7 @@ export class ActualImporter {
           const delay = this.getRetryDelay(attempt, retryConfig);
           logger.warn(
             { attempt: attempt + 1, maxRetries: retryConfig.maxRetries, delay, context, error: error?.message },
-            `Operation failed, retrying...`
+            `Operation failed, retrying...`,
           );
           await this.delay(delay);
         }
@@ -195,7 +195,7 @@ export class ActualImporter {
     actualAccountId: string,
     accountName: string,
     transactions: ScraperTransaction[],
-    startDate: Date
+    startDate: Date,
   ): Promise<void> {
     const mappedTransactions = this.createActualTxnsFromScraperTxns(actualAccountId, transactions, this.api);
     const txs = await this.api.getTransactions(actualAccountId, "2025-09-15", "2025-10-15");
@@ -207,14 +207,14 @@ export class ActualImporter {
     if (addTxnResult.errors?.length) {
       logger.error(
         { accountName, actualAccountId, errors: addTxnResult.errors },
-        `Got errors from Actual while importing transactions`
+        `Got errors from Actual while importing transactions`,
       );
       return;
     }
 
     logger.info(
       { accountName, actualAccountId, updated: addTxnResult.updated.length, added: addTxnResult.added.length },
-      `Transactions imported to Actual`
+      `Transactions imported to Actual`,
     );
 
     if (this.config.onImportSuccess) {
@@ -236,7 +236,7 @@ export class ActualImporter {
     const scrapeResult = await this.retryOperation(
       () => scraper.scrape(),
       `Scraping ${scraperConfig.options.companyId}`,
-      retryConfig
+      retryConfig,
     );
 
     for (const scraperAccount of scrapeResult.accounts) {
@@ -253,7 +253,7 @@ export class ActualImporter {
         actualAccountId = await this.retryOperation(
           () => this.createAccount(accountName, scraperConfig.actualAccountType, scraperAccount),
           `Creating account ${accountName}`,
-          retryConfig
+          retryConfig,
         );
       }
 
@@ -263,10 +263,10 @@ export class ActualImporter {
             actualAccountId,
             accountName,
             scraperAccount.txns,
-            scraperConfig.options.startDate
+            scraperConfig.options.startDate,
           ),
         `Importing transactions for ${accountName}`,
-        retryConfig
+        retryConfig,
       );
     }
   }
@@ -275,7 +275,7 @@ export class ActualImporter {
     { shouldShutdown, config }: { shouldShutdown?: boolean; config?: ActualImporterConfig } = {
       shouldShutdown: true,
       config: this.config,
-    }
+    },
   ): Promise<boolean> {
     let isSuccessful = true;
     if (!this.isInitialized) {
@@ -332,12 +332,14 @@ export class ActualImporter {
         name: accountName,
         type: accountType,
       },
-      balance
+      balance,
     );
 
-    // Note: notes-save via internal API removed in @actual-app/api v26
-    // Account number is logged for manual reference
-    logger.info({ accountName, newAccountId, accountNumber: scraperAccount.accountNumber }, `Account note: ${this.createAccountNoteString(scraperAccount.accountNumber)}`);
+    await actualSend("notes-save", {
+      id: `account-${newAccountId}`,
+      note: this.createAccountNoteString(scraperAccount.accountNumber),
+    });
+
     logger.info({ accountName, newAccountId }, `Account created in Actual`);
     return newAccountId;
   }
@@ -359,7 +361,7 @@ export class ActualImporter {
       this.api
         .q("notes")
         .filter({ note: { $like: `%${this.createAccountNoteString(externalAccountNumber)}%` } })
-        .select("*")
+        .select("*"),
     );
     return notes?.data?.[0];
   }
@@ -399,7 +401,7 @@ export class ActualImporter {
         deletedAccounts: deleteResult.filter((r) => r.status === "fulfilled").length,
         errors: deleteResult.filter((r) => r.status === "rejected").length,
       },
-      `Cleanup finished`
+      `Cleanup finished`,
     );
   }
 
@@ -414,7 +416,7 @@ export class ActualImporter {
   private createActualTxnsFromScraperTxns(
     accountId: string,
     scraperTransactions: ScraperTransaction[],
-    actualApi: ActualApi
+    actualApi: ActualApi,
   ): ActualTransaction[] {
     return scraperTransactions
       .map((t) => {
@@ -446,7 +448,7 @@ export class ActualImporter {
       const puppeteerConfig = getPuppeteerConfig();
       logger.info(
         { revision: puppeteerConfig.chromiumRevision, installPath: this.config.chromiumInstallPath },
-        `Downloading chromium`
+        `Downloading chromium`,
       );
 
       this.chromiumPath = await download({

@@ -1,8 +1,21 @@
 const { existsSync } = require("fs");
-const { join } = require("path");
+const { dirname, join } = require("path");
 const { spawnSync } = require("child_process");
 
-const dependencyDir = join(__dirname, "..", "node_modules", "israeli-bank-scrapers");
+const packageRoot = join(__dirname, "..");
+let dependencyDir;
+
+try {
+  dependencyDir = dirname(
+    require.resolve("israeli-bank-scrapers/package.json", {
+      paths: [packageRoot, process.cwd()],
+    }),
+  );
+} catch (error) {
+  console.warn("Could not find israeli-bank-scrapers to build.");
+  process.exit(0);
+}
+
 const libIndex = join(dependencyDir, "lib", "index.js");
 const sourceIndex = join(dependencyDir, "src", "index.ts");
 

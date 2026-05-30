@@ -13,7 +13,7 @@
     "@actual-app/api": "^26.5.0",
     "cron": "^4.3.0",
     "download-chromium": "^3.0.0",
-    "israeli-bank-scrapers": "github:yanivfranco/israeli-bank-scrapers-fork#master",
+    "israeli-bank-scrapers": "github:yanivfranco/israeli-bank-scrapers-fork#54164e031dcc34e44653082942cb1ac01c6d0d24",
     "moment": "^2.30.1",
     "pino": "^9.1.0",
     "pino-pretty": "^11.0.0",

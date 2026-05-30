@@ -2470,9 +2470,9 @@ isexe@^2.0.0:
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
-"israeli-bank-scrapers@github:yanivfranco/israeli-bank-scrapers-fork#master":
+"israeli-bank-scrapers@github:yanivfranco/israeli-bank-scrapers-fork#54164e031dcc34e44653082942cb1ac01c6d0d24":
   version "1.0.4"
-  resolved "https://codeload.github.com/yanivfranco/israeli-bank-scrapers-fork/tar.gz/d0be43e6adccb676ac1991afdec9c5722fc8f333"
+  resolved "https://codeload.github.com/yanivfranco/israeli-bank-scrapers-fork/tar.gz/54164e031dcc34e44653082942cb1ac01c6d0d24"
   dependencies:
     debug "^4.3.2"
     moment "^2.22.2"

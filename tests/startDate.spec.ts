@@ -332,6 +332,31 @@ describe("resolveStartDate (lastTransaction strategy)", () => {
     // Falls back to lastCronRunTime strategy when no accountId
     expect(getLastTransactionDateSpy).not.toHaveBeenCalled();
   });
+
+  it("should cap startDate to now minus buffer when last transaction is in the future", async () => {
+    const futureDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 days from now
+    getLastTransactionDateSpy.mockResolvedValue(futureDate);
+
+    const importer = new ActualImporter(createTestConfig({
+      startDateStrategy: "lastTransaction",
+      startDateBufferDays: 7,
+    }));
+
+    const scraperConfig = {
+      actualAccountType: "checking" as Account["type"],
+      options: { startDate: new Date("2024-06-10"), companyId: CompanyTypes.discount },
+      credentials: { id: "id", password: "pass", num: "num" },
+    };
+
+    const result = await importer.resolveStartDate(scraperConfig, "account-123");
+
+    const now = new Date();
+    const expected = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 7);
+    // Allow 5 seconds tolerance for test execution time
+    expect(Math.abs(result.getTime() - expected.getTime())).toBeLessThan(5000);
+    // Must not be in the future
+    expect(result.getTime()).toBeLessThanOrEqual(now.getTime());
+  });
 });
 
 describe("Transaction Mapping", () => {

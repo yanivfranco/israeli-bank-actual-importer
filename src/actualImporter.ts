@@ -187,7 +187,15 @@ export class ActualImporter {
     if (strategy === "lastTransaction" && actualAccountId) {
       const lastTxDate = await this.getLastTransactionDate(actualAccountId);
       if (lastTxDate) {
-        const startDate = new Date(lastTxDate.getTime() - 1000 * 60 * 60 * 24 * bufferDays);
+        let startDate = new Date(lastTxDate.getTime() - 1000 * 60 * 60 * 24 * bufferDays);
+        const now = new Date();
+        if (startDate > now) {
+          logger.warn(
+            { accountId: actualAccountId, lastTxDate, computedStartDate: startDate },
+            "Resolved startDate is in the future, falling back to now minus buffer",
+          );
+          startDate = new Date(now.getTime() - 1000 * 60 * 60 * 24 * bufferDays);
+        }
         logger.info(
           { accountId: actualAccountId, lastTxDate, startDate, bufferDays },
           "Resolved startDate from last transaction",

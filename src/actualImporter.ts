@@ -33,6 +33,8 @@ export type RetryConfig = {
   maxDelay: number;
 };
 
+export type StartDateStrategy = "lastCronRunTime" | "lastTransaction";
+
 export type ActualImporterConfig = {
   actualSyncId: string;
   actualUrl: string;
@@ -44,6 +46,9 @@ export type ActualImporterConfig = {
   chromiumInstallPath?: string;
   showLogs?: boolean;
   retry?: RetryConfig;
+  startDateStrategy?: StartDateStrategy;
+  startDateBufferDays?: number;
+  maxMonthsBack?: number;
   onImportError?: (result: OnImportErrorArgs) => void;
   onImportSuccess?: (result: OnImportSuccessArgs) => void;
   onImportFinish?: () => void;
@@ -142,6 +147,66 @@ export class ActualImporter {
     };
   }
 
+  /**
+   * Get the date of the last transaction in Actual for a given account.
+   * Returns null if no transactions found.
+   */
+  public async getLastTransactionDate(actualAccountId: string): Promise<Date | null> {
+    try {
+      const result = await this.api.runQuery(
+        (this.api.q("transactions") as any)
+          .filter({ account: actualAccountId })
+          .orderBy({ date: "desc" })
+          .limit(1)
+          .select(["date"]),
+      );
+
+      if ((result as any)?.data?.length > 0 && (result as any).data[0].date) {
+        return new Date((result as any).data[0].date);
+      }
+      return null;
+    } catch (error) {
+      logger.warn({ actualAccountId, error: (error as Error).message }, "Failed to get last transaction date");
+      return null;
+    }
+  }
+
+  /**
+   * Calculate start date for a scraper based on the configured strategy.
+   * - "lastTransaction": uses the last transaction date in Actual minus buffer days
+   * - "lastCronRunTime" (default): uses the file-based lastCronRunTime
+   * Falls back to maxMonthsBack or the scraper's hardcoded startDate.
+   */
+  public async resolveStartDate(scraperConfig: ScraperConfig, actualAccountId: string | null): Promise<Date> {
+    const strategy = this.config.startDateStrategy || "lastCronRunTime";
+    const bufferDays = this.config.startDateBufferDays ?? 7;
+    const maxMonthsBack = this.config.maxMonthsBack ?? 12;
+    const fallbackDate = new Date();
+    fallbackDate.setMonth(fallbackDate.getMonth() - maxMonthsBack);
+
+    if (strategy === "lastTransaction" && actualAccountId) {
+      const lastTxDate = await this.getLastTransactionDate(actualAccountId);
+      if (lastTxDate) {
+        const startDate = new Date(lastTxDate.getTime() - 1000 * 60 * 60 * 24 * bufferDays);
+        logger.info(
+          { accountId: actualAccountId, lastTxDate, startDate, bufferDays },
+          "Resolved startDate from last transaction",
+        );
+        return startDate;
+      }
+      // No transactions found — use fallback
+      logger.info({ accountId: actualAccountId, fallbackDate }, "No transactions found, using fallback startDate");
+      return scraperConfig.options.startDate || fallbackDate;
+    }
+
+    // Default: use lastCronRunTime strategy (backward compatible)
+    const lastCronRunTime = this.getLastCronRunTime();
+    if (lastCronRunTime && (!scraperConfig.options.startDate || lastCronRunTime > scraperConfig.options.startDate)) {
+      return lastCronRunTime;
+    }
+    return scraperConfig.options.startDate || fallbackDate;
+  }
+
   public getApi() {
     return this.api;
   }
@@ -198,7 +263,6 @@ export class ActualImporter {
     startDate: Date,
   ): Promise<void> {
     const mappedTransactions = this.createActualTxnsFromScraperTxns(actualAccountId, transactions, this.api);
-    const txs = await this.api.getTransactions(actualAccountId, "2025-09-15", "2025-10-15");
 
     logger.info({ accountName, actualAccountId, count: mappedTransactions.length }, `Importing transactions`);
 
@@ -233,6 +297,28 @@ export class ActualImporter {
     const scraper = new Scraper(scraperConfig, this.chromiumPath);
     const retryConfig = scraperConfig.retry;
 
+    // If using lastTransaction strategy, resolve startDate before scraping
+    if (this.config.startDateStrategy === "lastTransaction") {
+      // We need to find the actual account ID first to query last transaction
+      // For now, resolve with null (will use fallback), but override after account lookup
+      // The scraper needs startDate at scrape time, so we pre-resolve it for all known accounts
+      const accounts = await this.api.getAccounts();
+      for (const account of accounts) {
+        const note = await this.api.runQuery(
+          this.api.q("notes").filter({ id: `account-${account.id}` }).select("*"),
+        );
+        // Check if this account matches the scraper's companyId
+        if (note?.data?.[0]?.note?.includes(scraper.companyId)) {
+          const resolvedDate = await this.resolveStartDate(scraperConfig, account.id);
+          scraperConfig = {
+            ...scraperConfig,
+            options: { ...scraperConfig.options, startDate: resolvedDate },
+          };
+          break;
+        }
+      }
+    }
+
     const scrapeResult = await this.retryOperation(
       () => scraper.scrape(),
       `Scraping ${scraperConfig.options.companyId}`,
@@ -255,6 +341,13 @@ export class ActualImporter {
           `Creating account ${accountName}`,
           retryConfig,
         );
+      } else if (this.config.startDateStrategy === "lastTransaction") {
+        // Now that we have the actual account ID, resolve per-account startDate
+        const resolvedDate = await this.resolveStartDate(scraperConfig, actualAccountId);
+        scraperConfig = {
+          ...scraperConfig,
+          options: { ...scraperConfig.options, startDate: resolvedDate },
+        };
       }
 
       await this.retryOperation(

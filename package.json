@@ -1,6 +1,14 @@
 {
   "name": "israeli-bank-actual-importer",
   "version": "1.1.8",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yanivfranco/israeli-bank-actual-importer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yanivfranco/israeli-bank-actual-importer/issues"
+  },
+  "homepage": "https://github.com/yanivfranco/israeli-bank-actual-importer#readme",
   "author": "yanivfranco@gmail.com",
   "license": "MIT",
   "main": "dist/index.js",

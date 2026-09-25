@@ -10,25 +10,32 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: lts/*
       - name: Install Dependencies
         run: yarn --frozen-lockfile
       - name: Build
         run: yarn build
       - name: Release to Github and NPM
         id: release
-        uses: cycjimmy/semantic-release-action@v4.1.0
-        with:
-          branches: |
-            [
-              'main'
-            ]
+        run: |
+          set -o pipefail
+          npx --yes semantic-release@25 | tee /tmp/sr.log
+          if grep -q "Published release" /tmp/sr.log; then
+            VERSION=$(grep -oP "Published release \K[0-9]+\.[0-9]+\.[0-9]+" /tmp/sr.log | tail -1)
+            echo "new_release_published=true" >> "$GITHUB_OUTPUT"
+            echo "new_release_version=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "Released $VERSION"
+          else
+            echo "new_release_published=false" >> "$GITHUB_OUTPUT"
+            echo "No release published"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         timeout-minutes: 10
       - name: Trigger MyFinance rebuild
         if: steps.release.outputs.new_release_published == 'true'
@@ -43,3 +50,4 @@ permissions:
   packages: write
   issues: write
   pull-requests: write
+  id-token: write # required for npm trusted publishing (OIDC) + provenance
